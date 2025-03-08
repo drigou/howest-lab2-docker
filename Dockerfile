@@ -4,9 +4,7 @@ WORKDIR '/app'
 
 RUN apk add --no-cache linux-headers g++
 
-RUN pip install Flask
-
-RUN pip install uwsgi
+RUN pip install requirements.txt
 
 COPY ./ ./
 
