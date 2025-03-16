@@ -1,9 +1,9 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 
 # https://pydantic-docs.helpmanual.io/usage/settings/
 # Pydantic: Data validation and settings management using python type annotations.
-from pydantic import BaseSettings, PostgresDsn, validator
-
+from pydantic import PostgresDsn, validator
+from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     POSTGRES_HOST: str
@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "SG9wZWxpamsgZ2VicnVpa3QgZWVuIHN0dWRlbnQgZGl0IG9vaXQgbnV0dGlnLg=="
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 10
 
-    SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
+    SQLALCHEMY_DATABASE_URI: Union[Optional[PostgresDsn], Optional[str]] = None
 
     @validator("SQLALCHEMY_DATABASE_URI", pre=True)
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
@@ -23,11 +23,11 @@ class Settings(BaseSettings):
             return v
         return PostgresDsn.build(
             scheme="postgresql",
-            user=values.get("POSTGRES_USER"),
-            port=values.get("POSTGRES_PORT"),
+            username=values.get("POSTGRES_USER"),
+            port=int(values.get("POSTGRES_PORT")),
             password=values.get("POSTGRES_PASSWORD"),
             host=values.get("POSTGRES_HOST"),
-            path=f"/{values.get('POSTGRES_DATABASE') or ''}",
+            path=f"{values.get('POSTGRES_DATABASE') or ''}",
         )
 
     class Config:
